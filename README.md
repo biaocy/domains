@@ -14,7 +14,7 @@ domains rm example.com
 ```
 
 3. Show domain
-  - Show all domains
+  - Show all domains, order by expiration date
 	```bash
 	domains show
 	```

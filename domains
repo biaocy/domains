@@ -67,7 +67,7 @@ whois_domain() {
 }
 
 format_domain() {
-	echo "${*//|/ }"
+	echo "${*//|/	}"
 }
 
 add_domain() {
@@ -121,7 +121,7 @@ show_domain() {
 		while read -u 10 line
 		do
 			format_domain $line
-		done 10<$domains_file
+		done 10< <(cat $domains_file | sort -t '|' -k2)
 	fi
 }
 
