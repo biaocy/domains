@@ -6,6 +6,11 @@ domains_version="0.0.1"
 # domains file
 domains_file="$HOME/.domains"
 
+# terminal color
+RED='\033[0;31m'
+YELLOW='\033[1;33m'
+NC='\033[0m'
+
 # Make sure the domains file exists, create it if it doesn't
 if [ ! -e $domains_file ]
 then
@@ -67,7 +72,20 @@ whois_domain() {
 }
 
 format_domain() {
-	echo "${*//|/	}"
+	local line="$1"
+	local domain="$(echo $line | cut -d'|' -f1)"
+	local expiry="$(echo $line | cut -d'|' -f2)"
+	local diff=$(( `date +%s -d"$expiry"` - `date +%s` ))
+
+	if [ $diff -gt $((60*60*24*30)) ]
+	then
+		printf "$domain	$expiry\n"
+	elif [ $diff -gt 0 ]
+	then
+		printf "${YELLOW}$domain	$expiry${NC}\n"
+	else
+		printf "${RED}$domain	$expiry${NC}\n"
+	fi
 }
 
 add_domain() {
@@ -92,10 +110,10 @@ add_domain() {
 			then
 				return 1
 			fi
-			echo $record >> $domains_file
+			echo "$record" >> $domains_file
 		fi
 
-		format_domain $record
+		format_domain "$record" 
 	fi
 }
 
@@ -115,12 +133,12 @@ show_domain() {
 			echo "Domain $domain not found"
 			return 1
 		else
-			format_domain $record
+			format_domain "$record"
 		fi
 	else
 		while read -u 10 line
 		do
-			format_domain $line
+			format_domain "$line"
 		done 10< <(cat $domains_file | sort -t '|' -k2)
 	fi
 }
