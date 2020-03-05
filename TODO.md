@@ -1,0 +1,2 @@
+- [ ] Add config file
+- [ ] Add proxy feature
