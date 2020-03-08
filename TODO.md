@@ -1,4 +1,4 @@
 - [ ] Add config file
 - [ ] Add proxy feature
-- [ ] `add` command support multiple domains
+- [x] `add` command support multiple domains
 - [x] `update` command support auto refresh expired domains

@@ -94,31 +94,40 @@ format_domain() {
 }
 
 add_domain() {
-	local domain="$1"
-	if [ -z "$domain" ] 
+	if [ -z "$*" ] 
 	then
 		usage
 		return 1
 	else
+		local domain="$1"
 		if ! is_domain $domain 
 		then
 			echo "$domain not a vaild domain"
-			return 1
-		fi
-
-		local record=$(grep -s $domain $domains_file)
-		if [ -z "$record" ]
-		then
-			echo "Checking $domain..."
-			record=$(whois_domain $domain)
-			if [ $? -ne 0 ] 
+		else
+			local record=$(grep -s $domain $domains_file)
+			if [ -z "$record" ]
 			then
-				return 1
+				echo "Checking $domain..."
+				record=$(whois_domain $domain)
+				if [ $? -ne 0 ] 
+				then
+					return 1
+				fi
+				echo "$record" >> $domains_file
 			fi
-			echo "$record" >> $domains_file
+
+			format_domain "$record" 
 		fi
 
-		format_domain "$record" 
+		# process next argument
+		shift
+		if [ $# -eq 0 ]
+		then
+			# no argument less
+			return 0
+		else
+			add_domain $*
+		fi
 	fi
 }
 
