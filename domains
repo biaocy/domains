@@ -72,18 +72,23 @@ whois_domain() {
 }
 
 format_domain() {
-	local line="$1"
+	local line="$*"
 	local domain="$(echo $line | cut -d'|' -f1)"
 	local expiry="$(echo $line | cut -d'|' -f2)"
+	local month_diff=$(( `date +%s -d'next month'` - `date +%s` ))
 	local diff=$(( `date +%s -d"$expiry"` - `date +%s` ))
 
-	if [ $diff -gt $((60*60*24*30)) ]
+	# one month may not be 30 days
+	if [ $diff -gt $month_diff ]
 	then
+		# greater then a month
 		printf "$domain	$expiry\n"
 	elif [ $diff -gt 0 ]
 	then
+		# less then a month but do not expired
 		printf "${YELLOW}$domain	$expiry${NC}\n"
 	else
+		# Already expired
 		printf "${RED}$domain	$expiry${NC}\n"
 	fi
 }
@@ -147,8 +152,30 @@ update_domain() {
 	local domain="$1"
 	if [ -z "$domain" ]
 	then
-		# TODO update expired domains	
-		echo "Update all"
+		while read -u 10 line
+		do
+			domain=$(echo $line | cut -d'|' -f1)
+			expiry=$(echo $line | cut -d'|' -f2)
+			diff=$(( `date +%s -d"$expiry"` - `date +%s` ))
+			
+			if [ $diff -le 0 ]
+			then
+				#echo "Updating $domain..."
+				## domain expired, update
+				#record=$(whois_domain $domain)
+				#if [ $? -ne 0 ] 
+				#then
+				#	return 1
+				#fi
+
+				## first delete domain
+				#sed -i "/$domain/d" $domains_file
+				## then insert domain
+				#echo $record >> $domains_file
+				#format_domain "$record"
+				update_domain $domain
+			fi
+		done 10< <(cat $domains_file | sort -t '|' -k2)
 	else
 		local record=$(grep "$domain" $domains_file)
 		if [ $? -ne 0 ]
@@ -167,6 +194,7 @@ update_domain() {
 			sed -i "/$domain/d" $domains_file
 			# then insert domain
 			echo $record >> $domains_file
+			format_domain "$record"
 		fi
 	fi
 }
