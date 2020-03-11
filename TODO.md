@@ -2,3 +2,4 @@
 - [ ] Add proxy feature
 - [x] `add` command support multiple domains
 - [x] `update` command support auto refresh expired domains
+- [x] Add day count less for each domain

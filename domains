@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 
 # version
 domains_version="0.0.1"
@@ -35,7 +36,7 @@ check_via_curl() {
 	if [ $? -ne 0 ]
 	then
 		echo "Error: check_via_curl"
-		return 1
+		exit 1
 	fi
 
 	expiry=${expiry:$(expr index "$expiry" ':')}
@@ -48,7 +49,8 @@ check_via_whois() {
 	local expiry=$(whois $domain | grep -i expiry)
 	if [ $? -ne 0 ]
 	then
-		return 1
+		wohis $domain
+		exit 1
 	fi
 
 	expiry=${expiry:$(expr index "$expiry" ':')}
@@ -77,19 +79,20 @@ format_domain() {
 	local expiry="$(echo $line | cut -d'|' -f2)"
 	local month_diff=$(( `date +%s -d'next month'` - `date +%s` ))
 	local diff=$(( `date +%s -d"$expiry"` - `date +%s` ))
+    local diff_in_day=$(( $diff / $((60*60*24)) ))
 
 	# one month may not be 30 days
 	if [ $diff -gt $month_diff ]
 	then
 		# greater then a month
-		printf "$domain	$expiry\n"
+		printf "$domain\t$diff_in_day\t$expiry\n"
 	elif [ $diff -gt 0 ]
 	then
 		# less then a month but do not expired
-		printf "${YELLOW}$domain	$expiry${NC}\n"
+		printf "${YELLOW}$domain\t$diff_in_day\t$expiry${NC}\n"
 	else
 		# Already expired
-		printf "${RED}$domain	$expiry${NC}\n"
+		printf "${RED}$domain\t$diff_in_day\t$expiry${NC}\n"
 	fi
 }
 
