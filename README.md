@@ -1,5 +1,5 @@
 # Domain management tool
-Record domain's expiration date
+Record domain's expiration date. Inspired by [notes](https://github.com/pimterry/notes).
 
 ## Usage
 
